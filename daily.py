@@ -1,9 +1,8 @@
 from os import system
-
-system('clear')
+from datetime import datetime
 
 #read username, xp and level elements
-def readData():
+def readUser():
     #grab the file and parse the elements
     filename = open('db', 'r')
     data = filename.readlines()
@@ -15,6 +14,8 @@ def readData():
     level = data[2].replace('\n','')
     
     filename.close()
+
+    return user,xp,level
 
 #create new task
 def newTask():
@@ -71,10 +72,144 @@ def editLine(linenumber,newdata):
     a_file = open('db', 'r')
     list_of_lines = a_file.readlines()
     list_of_lines[linenumber] = f"{newdata}\n"
-    
+    a_file.close()
+
     #open file in write mode, replace lines with the ones we edited
     a_file = open('db', 'w')
     a_file.writelines(list_of_lines)
     a_file.close()
 
 
+def readTasks(date=f'{datetime.now().day}/{datetime.now().month}/{datetime.now().year}'):
+    filename = open('db','r')
+    
+    high = []
+    normal = []
+    low = []
+    day = []
+    
+    for line in filename:
+        line = line.split('|')
+        line[2] = line[2].replace('\n','')
+
+        if "/" not in line[2]:
+            continue
+
+        if line[2] == date:
+            day.append(line[0])
+
+        if line[1] == "high":
+            high.append(line[0])
+        elif line[1] == "normal":
+            normal.append(line[0])
+        else:
+            low.append(line[0])
+
+    return day,high,normal,low
+
+def printTasks(day,high,normal,low):
+    count = 1
+    whichtask = {}
+
+    print("HIGH LEVEL [30 XP]")
+    for task in high:
+        if task in day:
+            print(f"{count}-"+task)
+            whichtask[str(count)] = task
+            count += 1
+    print("\n")
+
+    print("NORMAL LEVEL [15 XP]")
+    for task in normal:
+        if task in day:
+            print(f"{count}-"+task)
+            whichtask[str(count)] = task
+            count += 1
+    print("\n")
+
+    print("LOW LEVEL [7 XP]")
+    for task in low:
+        if task in day:
+            print(f"{count}-"+task)
+            whichtask[str(count)] = task
+            count +=1
+    print("\n")
+    
+    return whichtask
+
+def printMenu(day,high,normal,low):
+    print('-'*120)
+    welcome = f"Welcome {user}!     Your Level: {level}     Your XP: {xp}"
+    number = 60 - int(len(welcome)/2)
+    print(" "*number + welcome + " "*number)
+
+    whichtask = printTasks(day,high,normal,low)
+    print('-'*120)
+    print("")
+
+    return whichtask
+
+
+def completeTask(user,whichtask):
+    try:
+        tasknumber = input("Please give task number: ")
+        if int(tasknumber) > len(whichtask) or int(tasknumber) < 1:
+            input("No such task found! [PRES ENTER]")
+        else:
+            task = whichtask[tasknumber]
+
+            #Take lines in file
+            filename = open('db','r')
+            lines = filename.readlines()
+
+            #find task level
+            for line in lines:
+                if line.strip('\n').split('|')[0] == task:
+                    tasklevel = line.strip('\n').split('|')[1]
+            filename.close()
+
+            #edit user xp
+            if tasklevel == "high":
+                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 30)}|{lines[0].split("|")[2]}'
+            elif tasklevel == "normal":
+                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 15)}|{lines[0].split("|")[2]}'
+            else:
+                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 7)}|{lines[0].split("|")[2]}'
+
+            print(lines)
+
+            #write lines
+            filename = open('db','w')
+            
+            for line in lines:
+                if line.strip('\n').split('|')[0] != task:
+                    filename.write(line)
+
+            filename.close()
+
+    except:
+        input("Task number must be a number! [PRESS ENTER]")
+        
+
+def checkLevel(xp,level):
+    pass
+
+while True:
+    user,xp,level = readUser()
+    day,high,normal,low = readTasks()
+    system('clear')
+    whichtask = printMenu(day,high,normal,low)
+    
+    print("[1] Complete task")
+    print("[2] Add new task")
+    print("[Q] Exit")
+    print("")
+
+    choice = input("What do you want to do?: ")
+    
+    if choice == "1":
+        completeTask(user,whichtask)
+    elif choice == "2":
+        newTask()        
+    elif choice == "Q":
+        break
