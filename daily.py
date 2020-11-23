@@ -17,23 +17,10 @@ def readUser():
 
     return user,xp,level
 
-#create new task
-def newTask():
-    #take task
-    task = input('Define the task you want to do: ')
-    
-    #take importance and check importence. only be high, normal or low.
-    while True:
-        importance = input('How important is this task? [high,normal,low]: ')
-        importance = importance.lower()
-        if importance == 'high' or importance == 'normal' or importance == 'low':
-            break
-        else:
-            input('This value can only be High, normal, or low! [PRESS ENTER]')
-    
+def dateChecker():
     #take date and check date. only be DD/MM/YY format
     while True:
-        date = input('What date do you want to do the task? [DD/MM/YYYY]: ')
+        date = input('What date do you want? [DD/MM/YYYY]: ')
         
         #check "/" character
         if '/' not in date:
@@ -57,6 +44,24 @@ def newTask():
             continue
         else:
             break
+
+    return date
+
+#create new task
+def newTask():
+    #take task
+    task = input('Define the task you want to do: ')
+    
+    #take importance and check importence. only be high, normal or low.
+    while True:
+        importance = input('How important is this task? [high,normal,low]: ')
+        importance = importance.lower()
+        if importance == 'high' or importance == 'normal' or importance == 'low':
+            break
+        else:
+            input('This value can only be High, normal, or low! [PRESS ENTER]')
+    
+    date = dateChecker()
 
     #combine information
     data = f"{task}|{importance}|{date}\n"
@@ -150,7 +155,7 @@ def printMenu(day,high,normal,low):
     return whichtask
 
 
-def completeTask(user,whichtask):
+def completeTask(whichtask,what="delete"):
     try:
         tasknumber = input("Please give task number: ")
         if int(tasknumber) > len(whichtask) or int(tasknumber) < 1:
@@ -167,14 +172,15 @@ def completeTask(user,whichtask):
                 if line.strip('\n').split('|')[0] == task:
                     tasklevel = line.strip('\n').split('|')[1]
             filename.close()
-
-            #edit user xp
-            if tasklevel == "high":
-                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 30)}|{lines[0].split("|")[2]}'
-            elif tasklevel == "normal":
-                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 15)}|{lines[0].split("|")[2]}'
-            else:
-                lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 7)}|{lines[0].split("|")[2]}'
+            
+            if what == "complete":
+                #edit user xp
+                if tasklevel == "high":
+                    lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 30)}|{lines[0].split("|")[2]}'
+                elif tasklevel == "normal":
+                    lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 15)}|{lines[0].split("|")[2]}'
+                else:
+                    lines[0] = f'{lines[0].split("|")[0]}|{str(int(lines[0].split("|")[1]) + 7)}|{lines[0].split("|")[2]}'
 
             print(lines)
 
@@ -191,25 +197,57 @@ def completeTask(user,whichtask):
         input("Task number must be a number! [PRESS ENTER]")
         
 
-def checkLevel(xp,level):
-    pass
+def checkLevel():
 
+    #take lines in file
+    filename = open('db','r')
+    lines = filename.readlines()
+    filename.close()
+
+    #find xp and level
+    xp = int(lines[0].split("|")[1])
+    level = int(lines[0].split("|")[2])
+
+    #check xp and level
+    if xp >= level * 1337:
+        level += 1
+
+    #edit user line
+    lines[0] = f'{lines[0].split("|")[0]}|{str(xp)}|{str(level)}\n'
+
+    #write lines
+    filename = open('db','w')
+
+    for line in lines:
+        filename.write(line)
+
+    filename.close()
+
+
+date = f'{datetime.now().day}/{datetime.now().month}/{datetime.now().year}'
 while True:
+    checkLevel()
     user,xp,level = readUser()
-    day,high,normal,low = readTasks()
+    day,high,normal,low = readTasks(date)
     system('clear')
     whichtask = printMenu(day,high,normal,low)
     
     print("[1] Complete task")
     print("[2] Add new task")
+    print("[3] Delete task")
+    print("[4] See another day's task")
     print("[Q] Exit")
     print("")
 
     choice = input("What do you want to do?: ")
     
     if choice == "1":
-        completeTask(user,whichtask)
+        completeTask(whichtask,"complete")
     elif choice == "2":
-        newTask()        
+        newTask()
+    elif choice == "3":
+        completeTask(whichtask)
+    elif choice == "4":
+        date = dateChecker()
     elif choice == "Q":
         break
