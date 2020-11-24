@@ -84,25 +84,31 @@ def editLine(linenumber,newdata):
     a_file.writelines(list_of_lines)
     a_file.close()
 
-
+#Take tasks from file
 def readTasks(date=f'{datetime.now().day}/{datetime.now().month}/{datetime.now().year}'):
+    #open file
     filename = open('db','r')
     
+    #take task as lists
     high = []
     normal = []
     low = []
     day = []
+
     
     for line in filename:
         line = line.split('|')
         line[2] = line[2].replace('\n','')
-
+        
+        #for dont take user line
         if "/" not in line[2]:
             continue
-
+        
+        #for take daily tasks
         if line[2] == date:
             day.append(line[0])
 
+        #to receive tasks by level
         if line[1] == "high":
             high.append(line[0])
         elif line[1] == "normal":
@@ -112,10 +118,12 @@ def readTasks(date=f'{datetime.now().day}/{datetime.now().month}/{datetime.now()
 
     return day,high,normal,low
 
+#for print tasks to screen
 def printTasks(day,high,normal,low):
-    count = 1
-    whichtask = {}
-
+    count = 1 #task counter
+    whichtask = {} #to be able to choose tasks by numbers
+    
+    #print high level tasks
     print("HIGH LEVEL [30 XP]")
     for task in high:
         if task in day:
@@ -124,6 +132,7 @@ def printTasks(day,high,normal,low):
             count += 1
     print("\n")
 
+    #print normal level tasks
     print("NORMAL LEVEL [15 XP]")
     for task in normal:
         if task in day:
@@ -132,6 +141,7 @@ def printTasks(day,high,normal,low):
             count += 1
     print("\n")
 
+    #print low level tasks
     print("LOW LEVEL [7 XP]")
     for task in low:
         if task in day:
@@ -142,9 +152,10 @@ def printTasks(day,high,normal,low):
     
     return whichtask
 
-def printMenu(day,high,normal,low):
+#to print the entire menu
+def printMenu(date,day,high,normal,low):
     print('-'*120)
-    welcome = f"Welcome {user}!     Your Level: {level}     Your XP: {xp}"
+    welcome = f"Welcome {user}!     Your Level: {level}     Your XP: {xp}                 {date}"
     number = 60 - int(len(welcome)/2)
     print(" "*number + welcome + " "*number)
 
@@ -229,8 +240,9 @@ while True:
     checkLevel()
     user,xp,level = readUser()
     day,high,normal,low = readTasks(date)
+    
     system('clear')
-    whichtask = printMenu(day,high,normal,low)
+    whichtask = printMenu(date,day,high,normal,low)
     
     print("[1] Complete task")
     print("[2] Add new task")
@@ -240,7 +252,8 @@ while True:
     print("")
 
     choice = input("What do you want to do?: ")
-    
+    choice = choice.lower()
+
     if choice == "1":
         completeTask(whichtask,"complete")
     elif choice == "2":
@@ -249,5 +262,7 @@ while True:
         completeTask(whichtask)
     elif choice == "4":
         date = dateChecker()
-    elif choice == "Q":
+    elif choice == "q":
         break
+    else:
+        input("Your selection is not in the menu! [PRESS ENTER]")
