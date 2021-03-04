@@ -1,3 +1,5 @@
+#! /bin/python
+
 from os import system
 from datetime import datetime
 
@@ -85,7 +87,7 @@ def editLine(linenumber,newdata):
     a_file.close()
 
 #Take tasks from file
-def readTasks(date=f'{datetime.now().day}/{datetime.now().month}/{datetime.now().year}'):
+def readTasks(date=f'{str(datetime.now().day).zfill(2)}/{str(datetime.now().month).zfill(2)}/{datetime.now().year}'):
     #open file
     filename = open('db','r')
     
@@ -235,7 +237,7 @@ def checkLevel():
     filename.close()
 
 
-date = f'{datetime.now().day}/{datetime.now().month}/{datetime.now().year}'
+date = f'{str(datetime.now().day).zfill(2)}/{str(datetime.now().month).zfill(2)}/{datetime.now().year}'
 while True:
     checkLevel()
     user,xp,level = readUser()
